@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -15,17 +15,20 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - uses: android-actions/setup-android@v3
-        with:
-          packages: "platforms;android-33 build-tools;36.0.0"
-
-      - name: Build
-        env:
-          BUILD_TOOLS: "36.0.0"
-        run: sh build.sh
+      - name: Prepare Android SDK and Build APK
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-33" "build-tools;34.0.0" >/dev/null
+          BUILD_PATH=$(find . -name "build.sh" | head -n 1)
+          if [ -z "$BUILD_PATH" ]; then
+            echo "ERROR: No se encontro build.sh en el repositorio"
+            ls -la
+            exit 1
+          fi
+          cd "$(dirname "$BUILD_PATH")"
+          BUILD_TOOLS=34.0.0 sh build.sh
 
       - uses: actions/upload-artifact@v4
         with:
           name: CleanLauncher-Clio2-APK
-          path: build/CleanLauncher.apk
+          path: "**/build/CleanLauncher.apk"
           if-no-files-found: error
