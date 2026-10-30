@@ -15,15 +15,15 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Prepare Android SDK and Build APK
+      - name: Unpack ZIP and Build APK
         run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-33" "build-tools;34.0.0" >/dev/null
-          BUILD_PATH=$(find . -name "build.sh" | head -n 1)
-          if [ -z "$BUILD_PATH" ]; then
-            echo "ERROR: No se encontro build.sh en el repositorio"
-            ls -la
-            exit 1
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-33" "build-tools;34.0.0" >/dev/null || true
+          ZIP_FILE=$(find . -maxdepth 2 -name "*.zip" | head -n 1)
+          if [ -n "$ZIP_FILE" ]; then
+            echo "Descomprimiendo $ZIP_FILE ..."
+            unzip -o -q "$ZIP_FILE" -d .
           fi
+          BUILD_PATH=$(find . -name "build.sh" | head -n 1)
           cd "$(dirname "$BUILD_PATH")"
           BUILD_TOOLS=34.0.0 sh build.sh
 
