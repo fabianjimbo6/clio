@@ -23,8 +23,13 @@ jobs:
             echo "Descomprimiendo $ZIP_FILE ..."
             unzip -o -q "$ZIP_FILE" -d .
           fi
-          BUILD_PATH=$(find . -name "build.sh" | head -n 1)
-          cd "$(dirname "$BUILD_PATH")"
+          # Busca la carpeta que tenga build.sh Y la carpeta res juntas
+          PROJECT_DIR=$(find . -type d -exec test -f '{}/build.sh' -a -d '{}/res' \; -print | head -n 1)
+          if [ -z "$PROJECT_DIR" ]; then
+            PROJECT_DIR="."
+          fi
+          echo "Compilando en directorio: $PROJECT_DIR"
+          cd "$PROJECT_DIR"
           BUILD_TOOLS=34.0.0 sh build.sh
 
       - uses: actions/upload-artifact@v4
